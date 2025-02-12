@@ -1,2 +1,132 @@
-hello
-hello again
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Happy Valentine's Day</title>
+    <style>
+        body {
+            background: url('pic.jpg') no-repeat center center/cover;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+        .container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+        .image {
+            position: absolute;
+            width: 180px;
+            height: 180px;
+            border-radius: 50%;
+            object-fit: cover;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+        .image:hover {
+            transform: scale(1.2);
+        }
+        .popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255, 255, 255, 0.9);
+            padding: 25px;
+            font-size: 20px;
+            border-radius: 15px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+            display: none;
+            z-index: 2000;
+        }
+        .heart {
+            position: absolute;
+            color: red;
+            font-size: 60px;
+            animation: floatUp 3s linear forwards;
+        }
+        @keyframes floatUp {
+            0% { opacity: 1; transform: translateY(0) scale(1); }
+            50% { opacity: 0.7; transform: translateY(-50px) scale(1.2); }
+            100% { opacity: 0; transform: translateY(-100px) scale(1.5); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container" id="container">
+        <div class="popup" id="popup">You are my heart! ❤️</div>
+    </div>
+    
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const container = document.getElementById("container");
+            const images = [
+                "img1.jpeg", "img2.jpeg", "img3.jpeg", 
+                "img4.jpeg", "img5.jpeg", "img6.jpeg", "img7.jpeg"
+            ];
+            let messages = [];
+
+            // Fetch messages from messages.txt
+            fetch("messages.txt")
+                .then(response => response.text())
+                .then(text => {
+                    messages = text.split("\n").map(msg => msg.trim()); // Trim empty spaces
+
+                    // Check if positions are already stored
+                    let storedPositions = localStorage.getItem("imagePositions");
+                    let positions = storedPositions ? JSON.parse(storedPositions) : [];
+
+                    if (positions.length !== images.length) {
+                        positions = images.map(() => ({
+                        top: Math.random() * 70 + 10 + "vh", // Keep images between 10% to 80% height
+                        left: Math.random() * 35 + 60 + "vw" // Keep images between 60vw to 95vw (Right Side)
+                        }));
+                    localStorage.setItem("imagePositions", JSON.stringify(positions));
+                    }
+
+
+
+                    // Display images
+                    images.forEach((src, index) => {
+                        let img = document.createElement("img");
+                        img.src = src;
+                        img.classList.add("image");
+                        img.style.top = positions[index].top;
+                        img.style.left = positions[index].left;
+                        img.onclick = function(event) {
+                            createMultipleHearts();
+                            setTimeout(() => showPopup(messages[index] || "You are my heart! ❤️"), 1500);
+                        };
+                        container.appendChild(img);
+                    });
+                });
+
+            function showPopup(message) {
+                const popup = document.getElementById("popup");
+                popup.innerText = message;
+                popup.style.display = "block";
+                setTimeout(() => popup.style.display = "none", 4000);
+            }
+
+            function createMultipleHearts() {
+                for (let i = 0; i < 180; i++) {
+                    setTimeout(() => {
+                        const heart = document.createElement("div");
+                        heart.classList.add("heart");
+                        heart.innerHTML = "❤️";
+                        heart.style.left = Math.random() * window.innerWidth + "px";
+                        heart.style.top = Math.random() * window.innerHeight + "px";
+                        document.body.appendChild(heart);
+                        setTimeout(() => heart.remove(), 5000);
+                    }, i * 50); // Faster heart animation
+                }
+            }
+        });
+
+    </script>
+</body>
+</html>
