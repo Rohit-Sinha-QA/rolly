@@ -38,13 +38,12 @@
             background: rgba(234, 179, 179, 0.9);
             padding: 25px;
             font-size: 25px;
-            font-weight: bold; /* Makes text bold */
+            font-weight: bold;
             border-radius: 15px;
             box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
             display: none;
             z-index: 2000;
         }
-
         .heart {
             position: absolute;
             color: red;
@@ -60,7 +59,7 @@
             position: fixed;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.95); /* Less transparent (darker) */
+            background: rgba(0, 0, 0, 0.95);
             color: white;
             display: flex;
             flex-direction: column;
@@ -70,7 +69,6 @@
             font-size: 100px;
             z-index: 3000;
         }
-
         .btn {
             margin-top: 20px;
             padding: 10px 20px;
@@ -89,10 +87,24 @@
             color: white;
             margin-right: 150px;
         }
+        .no-popup {
+            position: fixed;
+            top: 50%;
+            left: 49%;
+            transform: translate(-50%, -50%);
+            background: rgba(225, 92, 92, 0.9);
+            color: white;
+            padding: 25px;
+            font-size: 30px;
+            font-weight: bold;
+            border-radius: 15px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+            display: none;
+            z-index: 3000;
+        }
     </style>
 </head>
 <body>
-    <!-- Full-screen popup -->
     <div class="fullscreen-popup" id="questionPopup">
         <p>Do you love me? ❤️</p>
         <div class="button-container">
@@ -101,27 +113,28 @@
         </div>
     </div>
     
-
-    <!-- Valentine's Day screen -->
-    <div class="container" id="container">
-        <div class="popup" id="popup">You are my heart! ❤️</div>
+    <div class="no-popup" id="noPopup">
+        Saali Kutiya Kamini, 4 saal wait kar rha hu tere liye
+        Chal "YES" bol nhi to peet dunga wahi aake 😡
     </div>
+
     <div class="container" id="container">
         <div class="popup" id="popup">You are my heart! ❤️</div>
     </div>
 
     <script>
         function showValentineScreen() {
-            document.getElementById("questionPopup").style.display = "none"; // Hide initial question
-            document.getElementById("container").style.display = "block"; // Show main screen
+            document.getElementById("questionPopup").style.display = "none";
+            document.getElementById("container").style.display = "block";
         }
 
         function showRejectionMessage() {
-            alert("Saali Kutiya ab sahi jawab de kamini.......");
+            document.getElementById("noPopup").style.display = "block";
+            setTimeout(() => {
+                document.getElementById("noPopup").style.display = "none";
+            }, 8000);
         }
-    </script>
-    
-    <script>
+
         document.addEventListener("DOMContentLoaded", function() {
             const container = document.getElementById("container");
             const images = [
@@ -130,44 +143,23 @@
             ];
             let messages = [];
 
-            // Fetch messages from messages.txt
             fetch("messages.txt")
                 .then(response => response.text())
                 .then(text => {
-                    messages = text.split("\n").map(msg => msg.trim()); // Trim empty spaces
-
-                    // Check if positions are already stored
-                    let storedPositions = localStorage.getItem("imagePositions");
-                    let positions = storedPositions ? JSON.parse(storedPositions) : [];
-
-                    if (positions.length !== images.length) {
-                        let rows = 3, cols = 3;
-                        let gridWidth = 60; // Right 60% of screen (40vw to 100vw)
-                        let gridHeight = 80; // Use 80vh for spacing
-                        let startX = 40; // Start from 40vw
-                        let startY = 10; // Start from 10vh
-
-                        positions = [];
-                        for (let row = 0; row < rows; row++) {
-                            for (let col = 0; col < cols; col++) {
-                                if (positions.length < images.length) {
-                                    positions.push({
-                                        top: (startY + row * (gridHeight / rows)) + "vh",
-                                        left: (startX + col * (gridWidth / cols)) + "vw"
-                                    });
-                                }
-                            }
-                        }
-                        localStorage.setItem("imagePositions", JSON.stringify(positions));
-                    }
-
-                    // Display images
+                    messages = text.split("\n").map(msg => msg.trim());
+                    let rows = 3, cols = 3;
+                    let gridWidth = 60;
+                    let gridHeight = 80;
+                    let startX = 40;
+                    let startY = 10;
                     images.forEach((src, index) => {
                         let img = document.createElement("img");
                         img.src = src;
                         img.classList.add("image");
-                        img.style.top = positions[index].top;
-                        img.style.left = positions[index].left;
+                        let row = Math.floor(index / cols);
+                        let col = index % cols;
+                        img.style.top = (startY + row * (gridHeight / rows)) + "vh";
+                        img.style.left = (startX + col * (gridWidth / cols)) + "vw";
                         img.onclick = function(event) {
                             createMultipleHearts();
                             setTimeout(() => showPopup(messages[index] || "You are my heart! ❤️"), 1500);
@@ -192,12 +184,11 @@
                         heart.style.left = Math.random() * window.innerWidth + "px";
                         heart.style.top = Math.random() * window.innerHeight + "px";
                         document.body.appendChild(heart);
-                        setTimeout(() => heart.remove(), 5000);
-                    }, i * 50); // Faster heart animation
+                        setTimeout(() => heart.remove(), 2000);
+                    }, i * 50);
                 }
             }
         });
-
     </script>
 </body>
 </html>
