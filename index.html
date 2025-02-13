@@ -102,9 +102,14 @@
             display: none;
             z-index: 3000;
         }
+
     </style>
 </head>
 <body>
+
+    <div class="container" id="container">
+        <div class="popup" id="popup">You are my heart! ❤️</div>
+    </div>
     <div class="fullscreen-popup" id="questionPopup">
         <p>Do you love me? ❤️</p>
         <div class="button-container">
@@ -118,15 +123,15 @@
         Chal "YES" bol nhi to peet dunga wahi aake 😡
     </div>
 
-    <div class="container" id="container">
-        <div class="popup" id="popup">You are my heart! ❤️</div>
-    </div>
-
     <script>
         function showValentineScreen() {
             document.getElementById("questionPopup").style.display = "none";
             document.getElementById("container").style.display = "block";
-        }
+    
+            // Hide the 'No' popup in case it's visible
+            document.getElementById("noPopup").style.display = "none";
+            document.querySelector(".heart-label").style.display = "flex"; // Show heart label
+}
 
         function showRejectionMessage() {
             document.getElementById("noPopup").style.display = "block";
@@ -141,34 +146,52 @@
                 "img1.jpeg", "img2.jpeg", "img3.jpeg", 
                 "img4.jpeg", "img5.jpeg", "img6.jpeg", "img7.jpeg", "img8.jpeg", "img9.jpeg"
             ];
+            const sounds = [
+                "music1.mp3", "music2.mp3", "music3.mp3", 
+                "music4.mp3", "music5.mp3", "music6.mp3", "music7.mp3", "music8.mp3", "music9.mp3"
+            ];
+            const timestamps = [0, 0, 0, 0, 0, 0, 0, 1, 0]; // Different start times for each music
             let messages = [];
+            let currentAudio = null; // Track the currently playing audio
 
-            fetch("messages.txt")
-                .then(response => response.text())
-                .then(text => {
-                    messages = text.split("\n").map(msg => msg.trim());
-                    let rows = 3, cols = 3;
-                    let gridWidth = 60;
-                    let gridHeight = 80;
-                    let startX = 40;
-                    let startY = 10;
-                    images.forEach((src, index) => {
-                        let img = document.createElement("img");
-                        img.src = src;
-                        img.classList.add("image");
-                        let row = Math.floor(index / cols);
-                        let col = index % cols;
-                        img.style.top = (startY + row * (gridHeight / rows)) + "vh";
-                        img.style.left = (startX + col * (gridWidth / cols)) + "vw";
-                        img.onclick = function(event) {
-                            createMultipleHearts();
-                            setTimeout(() => showPopup(messages[index] || "You are my heart! ❤️"), 1500);
-                        };
-                        container.appendChild(img);
-                    });
-                });
+    fetch("messages.txt")
+        .then(response => response.text())
+        .then(text => {
+            messages = text.split("\n").map(msg => msg.trim());
+            let rows = 3, cols = 3;
+            let gridWidth = 60;
+            let gridHeight = 80;
+            let startX = 40;
+            let startY = 10;
+            images.forEach((src, index) => {
+                let img = document.createElement("img");
+                img.src = src;
+                img.classList.add("image");
+                let row = Math.floor(index / cols);
+                let col = index % cols;
+                img.style.top = (startY + row * (gridHeight / rows)) + "vh";
+                img.style.left = (startX + col * (gridWidth / cols)) + "vw";
+                
+                img.onclick = function(event) {
+                    if (currentAudio) {
+                        currentAudio.pause();
+                        currentAudio.currentTime = 0;
+                    }
 
-            function showPopup(message) {
+                    let audio = new Audio(sounds[index]);
+                    currentAudio = audio;
+                    audio.currentTime = timestamps[index]; // Start at a different timestamp for each track
+                    audio.play();
+
+                    createMultipleHearts();
+                    setTimeout(() => showPopup(messages[index] || "You are my heart! ❤️"), 1500);
+                };
+                
+                container.appendChild(img);
+            });
+        });
+
+                function showPopup(message) {
                 const popup = document.getElementById("popup");
                 popup.innerText = message;
                 popup.style.display = "block";
